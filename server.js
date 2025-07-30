@@ -1,11 +1,31 @@
 const http = require('http');
 
 const requestListener = (request, response) => {
+    const { method } = request;
     response.setHeader('Content-Type', 'text/html');
-
     response.statusCode = 200;
 
-    response.end('<h1>halo dunia!</h1>');
+    if (method === 'GET') {
+        response.end('<h1>halo GET!</h1>');
+    };
+
+    if (method === 'POST') {
+        let body = [];
+
+        request.on('data', (chunk) => {
+            body.push(chunk);
+        });
+
+        request.on('end', () => {
+            body = Buffer.concat(body).toString();
+            const { name } = JSON.parse(body);
+            response.end(`<h1>Halo, ${name}!</h1>`);
+        });
+    };
+
+    if (method === 'DELETE') {
+        response.end('<h1>halo DELETE!</h1>')
+    }
 };
 
 const server = http.createServer(requestListener);
