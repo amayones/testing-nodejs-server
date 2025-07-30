@@ -1,30 +1,93 @@
 const http = require('http');
 
 const requestListener = (request, response) => {
-    const { method } = request;
-    response.setHeader('Content-Type', 'text/html');
-    response.statusCode = 200;
+    const { method, url } = request;
+    response.setHeader('Content-Type', 'application/json');
 
-    if (method === 'GET') {
-        response.end('<h1>halo GET!</h1>');
-    };
+    if (url === '/') {
+        if (method === 'GET') {
+            response.statusCode = 200;
+            response.end(JSON.stringify({
+                message: 'halaman dashboard!'
+            }));
+        } else if (method === 'POST') {
+            let body = [];
 
-    if (method === 'POST') {
-        let body = [];
+            request.on('data', (chunk) => {
+                body.push(chunk);
+            });
 
-        request.on('data', (chunk) => {
-            body.push(chunk);
-        });
+            request.on('end', () => {
+                body = Buffer.concat(body).toString();
+                try {
+                    const { name } = JSON.parse(body);
+                    response.statusCode = 201;
+                    response.end(JSON.stringify({
+                        message: `Halo, ${name}! ini adalah halaman dashboard`
+                    }));
+                } catch (error) {
+                    response.statusCode = 400;
+                    response.end(JSON.stringify({
+                        error: 'Invalid JSON format!'
+                    }));
+                }
+            });
+        } else if (method === 'DELETE') {
+            response.statusCode = 200;
+            response.end(JSON.stringify({
+                message: 'halo DELETE!'
+            }));
+        } else {
+            response.statusCode = 405;
+            response.end(JSON.stringify({
+                error: `halaman tidak bisa di akses dengan ${method}!`
+            }));
+        }
 
-        request.on('end', () => {
-            body = Buffer.concat(body).toString();
-            const { name } = JSON.parse(body);
-            response.end(`<h1>Halo, ${name}!</h1>`);
-        });
-    };
+    } else if (url === '/about') {
+        if (method === 'GET') {
+            response.statusCode = 200;
+            response.end(JSON.stringify({
+                message: 'halaman about!'
+            }));
+        } else if (method === 'POST') {
+            let body = [];
 
-    if (method === 'DELETE') {
-        response.end('<h1>halo DELETE!</h1>')
+            request.on('data', (chunk) => {
+                body.push(chunk);
+            });
+
+            request.on('end', () => {
+                body = Buffer.concat(body).toString();
+                try {
+                    const { name } = JSON.parse(body);
+                    response.statusCode = 201;
+                    response.end(JSON.stringify({
+                        message: `Halo, ${name}! ini adalah halaman about`
+                    }));
+                } catch (error) {
+                    response.statusCode = 400;
+                    response.end(JSON.stringify({
+                        error: 'Invalid JSON format!'
+                    }));
+                }
+            });
+        } else if (method === 'DELETE') {
+            response.statusCode = 200;
+            response.end(JSON.stringify({
+                message: 'halo DELETE!'
+            }));
+        } else {
+            response.statusCode = 405;
+            response.end(JSON.stringify({
+                error: `halaman tidak bisa di akses dengan ${method}!`
+            }));
+        }
+    } else {
+        response.statusCode = 404;
+        response.end(JSON.stringify({
+            error: 'Halaman tidak ditemukan!'
+        }));
     }
 };
 
